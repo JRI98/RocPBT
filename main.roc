@@ -1,6 +1,6 @@
 app [main] {
-    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.15.0/SlwdbJ-3GR7uBWQo6zlmYWNYOxnvo8r6YABXD-45UOw.tar.br",
-    random: "https://github.com/lukewilliamboswell/roc-random/releases/download/0.2.1/mJSD8-uN-biRqa6CiqdN4-VJsKXxY8b1eFf6mFTe93A.tar.br",
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.16.0/O00IPk-Krg_diNS2dVWlI0ZQP794Vctxzv0ha96mK0E.tar.br",
+    random: "https://github.com/lukewilliamboswell/roc-random/releases/download/0.4.0/Ai2KfHOqOYXZmwdHX3g3ytbOUjTmZQmy0G2R9NuPBP0.tar.br",
 }
 
 import random.Random
@@ -163,7 +163,7 @@ generateString : Decoder Str RandomDecoder
 generateString = Decode.custom \bytes, @RandomDecoder {} ->
     when bytes is
         [length, .. as strBytes] ->
-            { before, others: rest } = List.split strBytes (Num.toU64 length)
+            { before, others: rest } = List.splitAt strBytes (Num.toU64 length)
 
             when Str.fromUtf8 before is
                 Ok str ->
@@ -267,21 +267,19 @@ randomValue = \@RandomState bytes ->
         Ok value -> (value, @RandomState rest)
         Err err -> crash (Inspect.toStr err)
 
-u32Generator = Random.u32 0 (Num.maxU32 - 1)
-
 randomExpect : { fn : RandomState -> Bool, runs ? U32, bytesMax ? U32 } -> Bool
 randomExpect = \{ fn, runs ? 1024, bytesMax ? 1024 } ->
     if runs == 0 then
         Bool.true
     else
-        initialSeed = Random.seed32 runs
+        initialSeed = Random.seed runs
 
         result =
             List.range { start: At 0, end: Before (bytesMax) }
             |> List.walk { seed: initialSeed, bytes: [] } \state, _ ->
-                random = u32Generator state.seed
-                value = Num.toU8 random.value
-                { seed: random.state, bytes: List.append state.bytes value }
+                randomGeneration = Random.u32 state.seed
+                value = Num.toU8 randomGeneration.value
+                { seed: randomGeneration.state, bytes: List.append state.bytes value }
 
         fnResult = fn (@RandomState result.bytes)
         if fnResult then
