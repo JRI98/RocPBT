@@ -1,6 +1,6 @@
 app [main!] {
 	pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/0.9/8GdFEvQYS3TeAZxKvTzCLVdQiomweGtXcdZkXNDEeABq.tar.zst",
-	random: "https://github.com/kili-ilo/roc-random/releases/download/0.6.0/4mHqd7aiQ1hYkoso9C8JRfnx3GuwcwoDqv8EdqAsLbfN.tar.zst",
+	random: "https://github.com/kili-ilo/roc-random/releases/download/0.9.2/2ZXLX8WRqrosGu1V3VL5aXqgtfTRvJmjFPx8a26ecVmc.tar.zst",
 }
 
 import random.Random
@@ -112,17 +112,22 @@ RandomFormat := [Default].{
 	decode_list = |fmt, rs, decode_elem| {
 		match fmt.decode_u8(rs) {
 			(Ok(len_byte), rs1) => {
-				list_len = U8.to_u64(len_byte)
-				r = Iter.fold(
-					0..<list_len,
-					{ state: rs1, value: [] },
-					|prev, _|
-						match decode_elem(prev.state, fmt) {
-							(Ok(v), ns) => { state: ns, value: prev.value.append(v) }
-							(_, ns) => { state: ns, value: prev.value }
-						},
-				)
-				(Ok(r.value), r.state)
+				var $cur_state = rs1
+				var $items = []
+				var $i = len_byte
+				while $i > 0 {
+					match decode_elem($cur_state, fmt) {
+						(Ok(v), ns) => {
+							$cur_state = ns
+							$items = List.append($items, v)
+						}
+						(_, ns) => {
+							$cur_state = ns
+						}
+					}
+					$i = $i - 1
+				}
+				(Ok($items), $cur_state)
 			}
 			(Err(_), rs1) => (Err("decode_list: fmt.decode_u8(rs)"), rs1)
 		}
@@ -169,7 +174,7 @@ random_expect_options : { fn : RandomState -> Bool, runs : U32 } -> Bool
 random_expect_options = |opts| {
 	var $i = opts.runs
 	while $i > 0 {
-		if !opts.fn(RandomState.(Random.seed($i))) {
+		if !(opts.fn)(RandomState.(Random.seed($i))) {
 			return False
 		}
 		$i = $i - 1
