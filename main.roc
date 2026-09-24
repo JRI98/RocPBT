@@ -1,5 +1,4 @@
 app [main!] {
-	pf: platform "https://github.com/lukewilliamboswell/roc-platform-template-zig/releases/download/0.9/8GdFEvQYS3TeAZxKvTzCLVdQiomweGtXcdZkXNDEeABq.tar.zst",
 	random: "https://github.com/kili-ilo/roc-random/releases/download/0.9.2/2ZXLX8WRqrosGu1V3VL5aXqgtfTRvJmjFPx8a26ecVmc.tar.zst",
 }
 
@@ -319,7 +318,7 @@ expect
 	)
 
 sorted_u8 : List(U8) -> List(U8)
-sorted_u8 = |lst| List.sort_with(lst, |a, b| if a < b LT else if a > b GT else EQ)
+sorted_u8 = |lst| List.sort_with(lst, |a, b| if a < b Before else if a > b After else Same)
 
 expect
 	random_expect(
