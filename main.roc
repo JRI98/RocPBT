@@ -1,28 +1,28 @@
-app [main!] {
-	random: "https://github.com/kili-ilo/roc-random/releases/download/0.9.2/2ZXLX8WRqrosGu1V3VL5aXqgtfTRvJmjFPx8a26ecVmc.tar.zst",
+app [] {
+	random: "https://github.com/niclas-ahden/roc-prng/releases/download/0.4.0/C3JpBYoPwC9SN5aweoh1Dux2K3iy4vfMTdAsWooE1HF5.tar.zst",
 }
 
 import random.Random
 
-RandomState := Random.State
+RandomState := Random.Seed
 
 RandomFormat := [Default].{
 	decode_u8 : RandomFormat, RandomState -> (Try(U8, Str), RandomState)
-	decode_u8 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.u8)
-		(Ok(value), RandomState.(new_state))
+	decode_u8 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.u8(U8.lowest, U8.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_u16 : RandomFormat, RandomState -> (Try(U16, Str), RandomState)
-	decode_u16 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.u16)
-		(Ok(value), RandomState.(new_state))
+	decode_u16 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.u16(U16.lowest, U16.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_u32 : RandomFormat, RandomState -> (Try(U32, Str), RandomState)
-	decode_u32 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.u32)
-		(Ok(value), RandomState.(new_state))
+	decode_u32 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.u32(U32.lowest, U32.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_u64 : RandomFormat, RandomState -> (Try(U64, Str), RandomState)
@@ -50,21 +50,21 @@ RandomFormat := [Default].{
 	}
 
 	decode_i8 : RandomFormat, RandomState -> (Try(I8, Str), RandomState)
-	decode_i8 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.i8)
-		(Ok(value), RandomState.(new_state))
+	decode_i8 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.i8(I8.lowest, I8.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_i16 : RandomFormat, RandomState -> (Try(I16, Str), RandomState)
-	decode_i16 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.i16)
-		(Ok(value), RandomState.(new_state))
+	decode_i16 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.i16(I16.lowest, I16.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_i32 : RandomFormat, RandomState -> (Try(I32, Str), RandomState)
-	decode_i32 = |_fmt, RandomState.(state)| {
-		{ value, state: new_state } = Random.step(state, Random.i32)
-		(Ok(value), RandomState.(new_state))
+	decode_i32 = |_fmt, RandomState.(seed)| {
+		(value, new_seed) = seed.i32(I32.lowest, I32.highest)
+		(Ok(value), RandomState.(new_seed))
 	}
 
 	decode_i64 : RandomFormat, RandomState -> (Try(I64, Str), RandomState)
@@ -169,7 +169,7 @@ random_expect : (RandomState -> Bool) -> Bool
 random_expect = |fn|
 	random_expect_options({ fn, runs: 64 })
 
-random_expect_options : { fn : RandomState -> Bool, runs : U32 } -> Bool
+random_expect_options : { fn : RandomState -> Bool, runs : U64 } -> Bool
 random_expect_options = |opts| {
 	var $i = opts.runs
 	while $i > 0 {
@@ -179,10 +179,6 @@ random_expect_options = |opts| {
 		$i = $i - 1
 	}
 	True
-}
-
-main! = |_args| {
-	Ok({})
 }
 
 sum_wrapping : U8, U8 -> U8
